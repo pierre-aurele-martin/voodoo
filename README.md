@@ -65,13 +65,76 @@ Many other applications at Voodoo will use consume this API.
 We are planning to put this project in production. According to you, what are the missing pieces to make this project production ready? 
 Please elaborate an action plan.
 
+__Answer 1 Start__
+
+We could deploy this project to production as it is, I don't see why it wouldn't work. Using a VPN to secure access and you're good to go.
+
+If this was the start of a business piece to managed games catalog, we would need a few more steps:
+
+    - Get a better dev environment and CI:
+        - use nodemon to have HMR (god that was annoying... I just see now that nodemon was installed :( )
+        - enforce the lint before commit
+        - add test coverage
+        - At some point, use TypeScript (i missed it :-)
+
+    - Improve the code quality
+        - Split code. Search, Add / Delete, Populate forms are all in the same file. They should be split as independant component
+        - I did not test but I'm pretty sure we're missing a proper error catching strategy. If the api fails, I doubt it would be seen on the front-end
+
+    - Improve basic security && performance
+        - Using compressed data and helmet on the express app
+
+Now on the heavy lifting, we would need pretty quickly:
+    - A proper SQL architecture. Having PG/MySQL databases for dev and prod environment would be more reliable
+    - User permission strategy. As now, everybody can add / delete game. This is most likely something we do not want
+
+A lot of this depend on for what and by who the project will be used.
+
+__Answer 1 End__
+
 #### Question 2:
 Let's pretend our data team is now delivering new files every day into the S3 bucket, and our service needs to ingest those files
 every day through the populate API. Could you describe a suitable solution to automate this? Feel free to propose architectural changes.
+
+__Answer 2 Start__
+
+First thing I'd do is adding a timestamp convention into the filename. Example: `android.top100.json` would become `android.top100.2022.06.01.json`. Assuming it's one file per day per source. Otherwise, another incremental convention would be required.
+
+Then, the populate action should not require someone to click on a button. This should be automated to run everyday as soon as there is a new file. With an email / slack reporting on the process.
+
+I'm not expert on AWS Lamba but it seems it can be planned by cron (https://docs.aws.amazon.com/fr_fr/lambda/latest/dg/services-cloudwatchevents-expressions.html). The function would check if there are some new files since last run, then process those new files and send a reporting to whom it concerns. Maybe S3 also offer a watch system that can trigger a function when a directory is modified.
+
+(If someone want a button to trigger this populate function, that would be possible).
+
+It would also be interesting to have some logs on what the function did, when it ran etc.
+
+Then the populate process would need to be improved. As for now, we don't remove old top 100 games (we can't even identified them). This really depend on what the business requirements are.
+
+
+PS: We should also specifiy on which criteria the top 100 are ranked.
+
+__Answer 2 End__
 
 #### Question 3:
 Both the current database schema and the files dropped in the S3 bucket are not optimal.
 Can you find ways to improve them?
 
+__Answer 3 Start__
 
+First obvious thing is that both schema does not match. If we lose S3 files, we lose data. No bueno.
+
+S3 is an array of an array of objects. First level looks useless to me.
+
+I had some encoding issues on my frontend `[ios] - Call of Duty�: Mobile`(SQLite) instead of `Call of Duty\udca8: Mobile - Season 10: Shadows Return`(S3). Didn't looked into but that would be an issue to fix.
+
+I'd add a created_at / updated_at in the SQL Schema (If I remember correctly, Sequelize can do this with an option).
+
+Then, I'm not shocked by the S3 schema. I'd assume it's an export from Google / Apple and we don't have much control on it. As said, what would be really important is the mapping of data from S3 -> SQL.
+
+As an example: `"app_view_url": "/android/us/brhappyfull/app/one-liner-line-to-win/com.one.liner.happyfull/",` (S3) ? Would the be readable from our front-end or do we need to rewrite it to be able to have the game illustraion properly displaying?
+
+Finally, and based on the business requirements, we could make a more complex DB Schema to have relations on publisher, platform and so on.
+
+
+__Answer 3 End__
 
