@@ -29,6 +29,34 @@ app.post('/api/games', async (req, res) => {
   }
 })
 
+app.post('/api/games/search', async (req, res) => {
+  try {
+
+    const where = {}
+
+    if (req.body.name) {
+      where.name = db.sequelize.where(
+        db.sequelize.fn('LOWER', db.sequelize.col('name')), 'LIKE', '%' + req.body.name.toLowerCase() + '%'
+      )
+    }
+
+    /*
+      Readme ask to return everything when no search is specified. IMO, platform is always specified so we should use it as a filter when we can.
+    */
+    // we could test here that platform in an accepted value ios / android
+    if (req.body.platform) {
+      where.platform = req.body.platform
+    }
+
+    let games = await db.Game.findAll({ where })
+
+    return res.send(games)
+  } catch (err) {
+    console.error('There was an error querying games', err);
+    return res.send(err);
+  }
+})
+
 app.delete('/api/games/:id', async (req, res) => {
   try {
     const game = await db.Game.findByPk(parseInt(req.params.id))

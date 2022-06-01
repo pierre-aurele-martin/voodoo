@@ -50,6 +50,47 @@ describe('GET /api/games', () => {
     });
 });
 
+/**
+ * Testing post search games endpoint
+ */
+ describe('POST /api/games/search', () => {
+    it('respond with json containing a list that includes the game we searched by name and platform', async () => {
+        const data = {
+            platform: 'ios',
+            name: 'app'
+        }
+        const { body, status } = await request(app)
+            .post('/api/games/search')
+            .set('Accept', 'application/json')
+            .send(data)
+        
+        assert.strictEqual(status, 200);
+        assert.strictEqual(body[0].publisherId, '1234567890');
+        assert.strictEqual(body[0].name, 'Test App');
+        assert.strictEqual(body[0].platform, 'ios');
+        assert.strictEqual(body[0].storeId, '1234');
+        assert.strictEqual(body[0].bundleId, 'test.bundle.id');
+        assert.strictEqual(body[0].appVersion, '1.0.0');
+        assert.strictEqual(body[0].isPublished, true);
+    });
+
+    it('respond with empty json when the search does not match any results', async () => {
+        const data = {
+            platform: 'ios',
+            name: 'blahblah'
+        }
+        const { body, status } = await request(app)
+            .post('/api/games/search')
+            .set('Accept', 'application/json')
+            .send(data)
+        
+            assert.strictEqual(status, 200);
+            assert.strictEqual(body.length, 0)
+    });
+
+    // TODO: Test the search more in depth with empty name
+});
+
 
 /**
  * Testing update game endpoint
