@@ -38,6 +38,11 @@
       <add-update-game title="Add Game" @save-game="onAddOrUpdateGame" />
     </div>
   </section>
+  <section class="section section-container" style="padding-bottom: 10px;">
+    <div class="box">
+      <populate-games title="Populate Games" @populate-games-db="populateGames" />
+    </div>
+  </section>
 </div>
 <script>
   const AddUpdateGame = {
@@ -207,9 +212,30 @@
     `
   }
 
+  /* No need of a form but I've never used Vue so duplicating search is the quickest way so far */
+  const Populate = {
+    data () {
+      return {}
+    },methods: {
+      populateGames() {
+        this.$emit('populate-games-db')
+      }
+    },
+    template: `
+       <form class="form" @submit.prevent="populateGames">
+        <h2 class="title">Populate All Games</h2>
+        <div class="field">
+          <div class="control">
+            <button class="button is-warning">Populate</button>
+          </div>
+        </div>
+      </form>
+    `
+  }
+
   new Vue({
     el: '#app',
-    components: { game: Game, 'add-update-game': AddUpdateGame, 'search-games': Search },
+    components: { game: Game, 'add-update-game': AddUpdateGame, 'search-games': Search, 'populate-games': Populate },
     data: {
       games: [],
       search: [],
@@ -255,6 +281,16 @@
           .then((response) => {
             this.games = response.data
           })
+      },
+      populateGames () {
+       return axios.post(`${this.apiURL}/populate`)
+          .then((response) => {
+            // I'm not confortable with Vue but a modal would be better.
+            console.log(`Added ${response.data.populate} games`)
+          })
+          .catch(error => {
+            console.error('Populate error =>', error)
+          }) 
       }
     },
     beforeMount () {

@@ -53,6 +53,8 @@ To do this, our data team have put in place 2 files at your disposal in an S3 bu
 - https://interview-marketing-eng-dev.s3.eu-west-1.amazonaws.com/android.top100.json
 - https://interview-marketing-eng-dev.s3.eu-west-1.amazonaws.com/ios.top100.json
 
+__Done with adding both features. Tests are missing for feature B as I'm running out of time. Some comments to read as a few comfort features could be easily added__
+
 # Theory Assignments
 You should complete these only after you have completed the practical assignments.
 

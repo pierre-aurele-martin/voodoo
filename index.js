@@ -1,12 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const db = require('./models');
+const { populateAll } = require('./utils/populate');
 
 const app = express();
 
 app.use(bodyParser.json());
 app.use(express.static(`${__dirname}/static`));
-
 
 app.get('/api/games', async (req, res) => {
   try {
@@ -52,7 +52,16 @@ app.post('/api/games/search', async (req, res) => {
 
     return res.send(games)
   } catch (err) {
-    console.error('There was an error querying games', err);
+    return res.send(err);
+  }
+})
+
+app.post('/api/games/populate', async (req, res) => {
+  try {
+    // on success, we could re-trigger a findAll and send the data to the front so the user doesn't have to refresh the page to see it.
+    const populate = await populateAll()
+    return res.send({populate})
+  } catch (err) {
     return res.send(err);
   }
 })

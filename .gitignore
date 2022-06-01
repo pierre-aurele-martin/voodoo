@@ -88,3 +88,6 @@ typings/
 .dynamodb/
 
 .idea
+
+# no need to update the update SQLite
+*.sqlite3
